@@ -13,7 +13,7 @@ jobs:
           python-version: '3.14'
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install flet pandas openpyxl
-          pip install flet-build
       - name: Build APK
-        run: flet build apk
+        run: flet build apk --project la-vida-finance
