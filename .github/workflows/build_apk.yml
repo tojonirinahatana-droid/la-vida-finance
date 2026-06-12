@@ -20,8 +20,8 @@ jobs:
           FLET_NO_INPUT: "true"
         run: |
           yes | flet build apk --project la-vida-finance
-      - name: Upload APK
+    - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: build/apk/app-release.apk
+          path: build/apk/**/*.apk
