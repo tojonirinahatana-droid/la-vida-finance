@@ -16,4 +16,7 @@ jobs:
           pip install --upgrade pip
           pip install flet pandas openpyxl
       - name: Build APK
-        run: flet build apk --project la-vida-finance
+        env:
+          FLET_NO_INPUT: "true"
+        run: |
+          yes | flet build apk --project la-vida-finance
