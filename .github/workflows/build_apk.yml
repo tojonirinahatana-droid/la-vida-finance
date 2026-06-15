@@ -1,9 +1,6 @@
 name: Build APK
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+on: [push]
 
 jobs:
   build:
@@ -11,23 +8,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       - name: Install dependencies
         run: |
-          pip install flet
-          # Assurez-vous que flet est bien dans votre projet
+          pip install --upgrade pip
+          pip install flet pandas openpyxl
 
       - name: Build APK
+        env:
+          FLET_NO_INPUT: "true"
         run: |
-          # Cette commande prend du temps, c'est normal
-          flet build apk
+          # Utilisation de flet build apk sans --project si vous êtes à la racine
+          yes | flet build apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-build-output
+          # On cible le dossier spécifique des APK pour ne pas avoir un fichier de 1.5 Go
           path: build/apk/app/outputs/flutter-apk/*.apk
