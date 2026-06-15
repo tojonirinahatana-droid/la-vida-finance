@@ -22,12 +22,11 @@ jobs:
         env:
           FLET_NO_INPUT: "true"
         run: |
-          # Utilisation de flet build apk sans --project si vous êtes à la racine
           yes | flet build apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-build-output
-          # On cible le dossier spécifique des APK pour ne pas avoir un fichier de 1.5 Go
-          path: build/apk/app/outputs/flutter-apk/*.apk
+          # Ce chemin est plus large pour garantir que GitHub trouve le fichier APK
+          path: build/**/outputs/apk/**/*.apk
