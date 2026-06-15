@@ -17,13 +17,17 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install flet
+        run: |
+          pip install flet
+          # Assurez-vous que flet est bien dans votre projet
 
       - name: Build APK
-        run: flet build apk
+        run: |
+          # Cette commande prend du temps, c'est normal
+          flet build apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-apk
+          name: app-build-output
           path: build/apk/app/outputs/flutter-apk/*.apk
