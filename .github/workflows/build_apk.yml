@@ -17,19 +17,17 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          pip install flet
-          # Assurez-vous d'avoir flet dans votre requirements.txt si vous en avez un
+        run: pip install flet
 
       - name: Build APK
         run: |
-          # --release : crucial pour supprimer les outils de debug qui font planter l'appli
-          # --split-per-abi : divise le poids par 3 ou 4 en ciblant l'architecture du téléphone
+          # C'est ici que ça se joue : --release est obligatoire pour que l'appli tourne sans PC
+          # --split-per-abi réduit la taille et garantit la compatibilité avec votre Honor 8x
           flet build apk --release --split-per-abi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          # On récupère uniquement les fichiers APK générés
+          # On récupère tous les fichiers générés
           path: build/apk/app/outputs/flutter-apk/*.apk
