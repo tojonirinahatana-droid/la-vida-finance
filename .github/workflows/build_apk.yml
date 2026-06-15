@@ -1,27 +1,35 @@
 name: Build APK
 
-on: [push]
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: '3.12'
+
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install flet pandas openpyxl
+          pip install flet
+          # Assurez-vous d'avoir flet dans votre requirements.txt si vous en avez un
+
       - name: Build APK
-        env:
-          FLET_NO_INPUT: "true"
         run: |
-          yes | flet build apk --project la-vida-finance
+          # --release : crucial pour supprimer les outils de debug qui font planter l'appli
+          # --split-per-abi : divise le poids par 3 ou 4 en ciblant l'architecture du téléphone
+          flet build apk --release --split-per-abi
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-build-output
-          path: build/
+          name: app-release
+          # On récupère uniquement les fichiers APK générés
+          path: build/apk/app/outputs/flutter-apk/*.apk
