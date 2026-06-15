@@ -1,11 +1,14 @@
 import flet as ft
 import pandas as pd
 import os
+import pathlib
 from datetime import datetime
 
-# --- CONFIGURATION ---
-EXCEL_FILE = "finance_data_essai.xlsx"
-CONFIG_FILE = "config.txt"
+# --- CONFIGURATION AVEC CHEMIN RELATIF (ESSENTIEL POUR ANDROID) ---
+# Le dossier de l'application est utilisé pour stocker les fichiers
+APP_DIR = pathlib.Path(__file__).parent.absolute()
+EXCEL_FILE = APP_DIR / "finance_data_essai.xlsx"
+CONFIG_FILE = APP_DIR / "config.txt"
 CATEGORIES_LIST = ["VUE GÉNÉRALE", "CREDIT", "FRAIS", "GOUTTER", "DEVOIR SABATH", "SANTE", "RIZ", "PLUS", "ENTRÉES", "BANQUE BNI"]
 
 def get_initiale():
@@ -20,6 +23,10 @@ def main(page: ft.Page):
     page.title = "LA VIDA - GESTION FINANCIÈRE"
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 10
+    
+    # Création automatique du fichier Excel s'il n'existe pas
+    if not EXCEL_FILE.exists():
+        pd.DataFrame(columns=["DATE", "CATEGORIE", "ENTREE", "SORTIE", "MOTIF"]).to_excel(EXCEL_FILE, index=False)
     
     etat = {"nom": "VUE GÉNÉRALE"}
     
@@ -46,7 +53,7 @@ def main(page: ft.Page):
     def enregistrer_bni(is_entree):
         if not input_bni_montant.value: return
         montant = float(input_bni_montant.value)
-        df = pd.read_excel(EXCEL_FILE) if os.path.exists(EXCEL_FILE) else pd.DataFrame(columns=["DATE", "CATEGORIE", "ENTREE", "SORTIE", "MOTIF"])
+        df = pd.read_excel(EXCEL_FILE)
         nouveau = pd.DataFrame([{"DATE": datetime.now().strftime("%d/%m/%Y"), "CATEGORIE": "BANQUE BNI",
                                  "ENTREE": montant if is_entree else 0,
                                  "SORTIE": 0 if is_entree else montant, 
@@ -58,41 +65,40 @@ def main(page: ft.Page):
 
     def rafraichir(e=None):
         initiale = get_initiale()
-        if os.path.exists(EXCEL_FILE):
-            df = pd.read_excel(EXCEL_FILE)
-            e_v = df['ENTREE'].sum() if 'ENTREE' in df.columns else 0
-            s_v = df['SORTIE'].sum() if 'SORTIE' in df.columns else 0
-            
-            bni_df = df[df['CATEGORIE'] == "BANQUE BNI"].copy()
-            bni_df['SOLDE_BNI'] = (bni_df['ENTREE'] - bni_df['SORTIE']).cumsum()
-            
-            lbl_init.value = f"{initiale:,.0f} Ar"
-            lbl_entree.value = f"{e_v:,.0f} Ar"
-            lbl_sortie.value = f"{s_v:,.0f} Ar"
-            lbl_reste.value = f"{(initiale - s_v + e_v):,.0f} Ar"
-            lbl_bni_retrait.value = f"{bni_df['SORTIE'].sum():,.0f} Ar"
-            lbl_bni_reste.value = f"{bni_df['SOLDE_BNI'].iloc[-1] if not bni_df.empty else 0:,.0f} Ar"
-            
-            bni_history_table.rows.clear()
-            for _, r in bni_df.tail(20).iloc[::-1].iterrows():
-                bni_history_table.rows.append(ft.DataRow(cells=[
-                    ft.DataCell(ft.Text(str(r.get('DATE', '')))),
-                    ft.DataCell(ft.Text(f"{r.get('SORTIE', 0):,.0f}")),
-                    ft.DataCell(ft.Text(f"{r.get('ENTREE', 0):,.0f}")),
-                    ft.DataCell(ft.Text(f"{r.get('SOLDE_BNI', 0):,.0f}")),
-                    ft.DataCell(ft.Text(str(r.get('MOTIF', '')))),
-                ]))
-            
-            data_table.rows.clear()
-            temp_df = df if etat["nom"] == "VUE GÉNÉRALE" else df[df['CATEGORIE'] == etat["nom"]]
-            for _, r in temp_df.tail(50).iloc[::-1].iterrows():
-                data_table.rows.append(ft.DataRow(cells=[
-                    ft.DataCell(ft.Text(str(r.get('DATE', '')))),
-                    ft.DataCell(ft.Text(str(r.get('CATEGORIE', '')))),
-                    ft.DataCell(ft.Text(f"{r.get('SORTIE', 0):,.0f}")),
-                    ft.DataCell(ft.Text(f"{r.get('ENTREE', 0):,.0f}")),
-                    ft.DataCell(ft.Text(str(r.get('MOTIF', '')))),
-                ]))
+        df = pd.read_excel(EXCEL_FILE)
+        e_v = df['ENTREE'].sum() if 'ENTREE' in df.columns else 0
+        s_v = df['SORTIE'].sum() if 'SORTIE' in df.columns else 0
+        
+        bni_df = df[df['CATEGORIE'] == "BANQUE BNI"].copy()
+        bni_df['SOLDE_BNI'] = (bni_df['ENTREE'] - bni_df['SORTIE']).cumsum()
+        
+        lbl_init.value = f"{initiale:,.0f} Ar"
+        lbl_entree.value = f"{e_v:,.0f} Ar"
+        lbl_sortie.value = f"{s_v:,.0f} Ar"
+        lbl_reste.value = f"{(initiale - s_v + e_v):,.0f} Ar"
+        lbl_bni_retrait.value = f"{bni_df['SORTIE'].sum():,.0f} Ar"
+        lbl_bni_reste.value = f"{bni_df['SOLDE_BNI'].iloc[-1] if not bni_df.empty else 0:,.0f} Ar"
+        
+        bni_history_table.rows.clear()
+        for _, r in bni_df.tail(20).iloc[::-1].iterrows():
+            bni_history_table.rows.append(ft.DataRow(cells=[
+                ft.DataCell(ft.Text(str(r.get('DATE', '')))),
+                ft.DataCell(ft.Text(f"{r.get('SORTIE', 0):,.0f}")),
+                ft.DataCell(ft.Text(f"{r.get('ENTREE', 0):,.0f}")),
+                ft.DataCell(ft.Text(f"{r.get('SOLDE_BNI', 0):,.0f}")),
+                ft.DataCell(ft.Text(str(r.get('MOTIF', '')))),
+            ]))
+        
+        data_table.rows.clear()
+        temp_df = df if etat["nom"] == "VUE GÉNÉRALE" else df[df['CATEGORIE'] == etat["nom"]]
+        for _, r in temp_df.tail(50).iloc[::-1].iterrows():
+            data_table.rows.append(ft.DataRow(cells=[
+                ft.DataCell(ft.Text(str(r.get('DATE', '')))),
+                ft.DataCell(ft.Text(str(r.get('CATEGORIE', '')))),
+                ft.DataCell(ft.Text(f"{r.get('SORTIE', 0):,.0f}")),
+                ft.DataCell(ft.Text(f"{r.get('ENTREE', 0):,.0f}")),
+                ft.DataCell(ft.Text(str(r.get('MOTIF', '')))),
+            ]))
 
         is_bni = (etat["nom"] == "BANQUE BNI")
         bni_view.visible = is_bni
@@ -101,7 +107,7 @@ def main(page: ft.Page):
 
     def valider(is_entree):
         if not input_montant.value or not input_cat.value: return
-        df = pd.read_excel(EXCEL_FILE) if os.path.exists(EXCEL_FILE) else pd.DataFrame(columns=["DATE", "CATEGORIE", "ENTREE", "SORTIE", "MOTIF"])
+        df = pd.read_excel(EXCEL_FILE)
         nouveau = pd.DataFrame([{"DATE": input_date.value, "CATEGORIE": input_cat.value,
                                  "ENTREE": float(input_montant.value) if is_entree else 0,
                                  "SORTIE": float(input_montant.value) if not is_entree else 0, 
