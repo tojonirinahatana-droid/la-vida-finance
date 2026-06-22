@@ -5,21 +5,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+          
       - name: Install dependencies
-        run: pip install flet
-      - name: Build APK
-        env:
-          FLET_NO_INPUT: 1
-          # On définit les variables d'environnement pour qu'il n'ait rien à demander
-          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
-          yes | flet build apk --skip-upload --no-deps
+          pip install --upgrade pip
+          pip install buildozer cython
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+
+      - name: Build with Buildozer
+        run: |
+          buildozer android debug
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-build-output
-          path: build/apk/app-release-signed.apk
+          path: bin/*.apk
