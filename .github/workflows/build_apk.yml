@@ -1,32 +1,22 @@
 name: Build APK
-
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.14'
-
+          python-version: '3.11'
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install flet pandas openpyxl
-
+          pip install flet
       - name: Build APK
-        env:
-          FLET_NO_INPUT: "true"
-        run: |
-          yes | flet build apk
-
+        run: flet build apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-build-output
-          # Ce chemin est plus large pour garantir que GitHub trouve le fichier APK
-          path: build/**/outputs/apk/**/*.apk
+          path: build/apk/app-release-signed.apk
