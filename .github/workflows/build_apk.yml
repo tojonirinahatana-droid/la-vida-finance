@@ -12,8 +12,10 @@ jobs:
       - name: Install Flet
         run: pip install flet
       - name: Build APK
-        # La commande 'flet build apk' est lancée sans fioritures
-        run: flet build apk
+        # La variable FLET_NO_INPUT=1 bloque toutes les questions interactives
+        env:
+          FLET_NO_INPUT: 1
+        run: flet build apk --no-deps
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
