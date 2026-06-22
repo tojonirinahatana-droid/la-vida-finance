@@ -9,13 +9,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - name: Install Flet
+      - name: Install dependencies
         run: pip install flet
       - name: Build APK
-        # La variable FLET_NO_INPUT=1 bloque toutes les questions interactives
         env:
           FLET_NO_INPUT: 1
-        run: flet build apk --no-deps
+          # On définit les variables d'environnement pour qu'il n'ait rien à demander
+          ANDROID_HOME: /usr/local/lib/android/sdk
+        run: |
+          yes | flet build apk --skip-upload --no-deps
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
