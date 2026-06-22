@@ -22,7 +22,10 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          buildozer android debug 2>&1 | tee build_log.txt
+          # On affiche le contenu du dossier pour trouver l'APK
+          buildozer android debug
+          echo "Contenu du dossier après build :"
+          ls -R
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
