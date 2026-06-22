@@ -14,8 +14,12 @@ jobs:
       - name: Build APK
         # La commande printf force la réponse "y" pour l'installation de Flutter
         run: printf 'y\n' | flet build apk
+      - name: Find and Upload APK
+        run: |
+          find . -name "*.apk"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-build-output
-          path: build/apk/app-release-signed.apk
+          # On change le chemin pour englober tout ce qui ressemble à un APK
+          path: build/**/*.apk
