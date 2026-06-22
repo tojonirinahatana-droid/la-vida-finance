@@ -1,4 +1,7 @@
-name: Build APK
+- name: Build APK
+        run: |
+          # On ajoute 'yes |' pour répondre automatiquement à toutes les questions
+          yes | flet build apk
 on: [push]
 jobs:
   build:
